@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import requests
+import eth_abi
 
 QNRG_URL = "https://qrng.anu.edu.au/API/jsonI.php?length=256&type=uint8"
 CSNRG_URL = "https://csrng.net/csrng/csrng.php?min=0&max=255"
@@ -41,17 +42,17 @@ def get_ruint8_output_list(ruint8_count):
     return ruint8_output_list
 
 
-def save_result(ruint8_output_list):
+def generate_callback(ruint8_output_list):
     iexec_out = os.environ['IEXEC_OUT']
-    result_filepath = os.path.join(iexec_out, 'ruint8_list.txt')
-    with open(result_filepath, 'w+') as f:
-        f.write(str(ruint8_output_list))
-    computed_file_content = {"deterministic-output-path": result_filepath}
+    callback_data = eth_abi.encode_single('uint8[]', ruint8_output_list).hex()
+    callback_data = '0x{}'.format(callback_data)
+    print('Encoded result {} to {}'.format(ruint8_output_list, callback_data))
     with open(iexec_out + '/computed.json', 'w+') as f:
-        json.dump(computed_file_content, f)
+        json.dump({"callback-data": callback_data}, f)
 
 
 if __name__ == '__main__':
     ruint8_count = get_requested_ruint8_count()
     ruint8_output_list = get_ruint8_output_list(ruint8_count)
-    save_result(ruint8_output_list)
+    generate_callback(ruint8_output_list)
+

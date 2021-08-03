@@ -5,8 +5,8 @@ ENTRYPOINT="python3 /app/app.py"
 # declare an image name
 IMG_NAME=randomn-iexec
 
-IMG_FROM=${IMG_NAME}:randomn-iexec
-IMG_TO=${IMG_NAME}:tee-debug
+IMG_FROM=${IMG_NAME}:non-tee
+IMG_TO=${IMG_NAME}:tee
 
 # build the regular non-TEE image
 docker build . -t ${IMG_FROM}
@@ -32,4 +32,5 @@ docker run -it --rm \
             --no-color \
             --verbose \
             --command=${ENTRYPOINT} \
-            && echo && echo "successfully built TEE docker image => ${IMG_TO}"
+            && echo "successfully built TEE docker image => ${IMG_TO}" \
+            && echo "application mrenclave.fingerprint is $(docker run -it --rm -e SCONE_HASH=1 ${IMG_TO})"
